@@ -16,8 +16,6 @@ namespace ExerciseApi.Controllers
         {
             _db = db;
         }
-
-        // POST: api/sbd
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] SBDRequestDto dto)
         {
@@ -44,8 +42,6 @@ namespace ExerciseApi.Controllers
             await _db.SaveChangesAsync();
             return Ok();
         }
-
-        // GET: api/sbd/{userId}
         [HttpGet("{userId}")]
         public async Task<IActionResult> Get(long userId)
         {
@@ -54,8 +50,6 @@ namespace ExerciseApi.Controllers
                 return NotFound();
             return Ok(new { squat = sbd.Squat, bench = sbd.Bench, deadlift = sbd.Deadlift });
         }
-
-        // DELETE: api/sbd/{userId}
         [HttpDelete("{userId}")]
         public async Task<IActionResult> Delete(long userId)
         {

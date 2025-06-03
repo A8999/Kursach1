@@ -40,7 +40,6 @@ namespace APIprot.Clients
                 case "/waist": bodyPart = "waist"; break;
                 case string text when text.StartsWith("/caloriesetup"):
                     var parts = text.Split(' ');
-                    // Дозволяємо вводити зріст і вагу прямо у команді: /caloriesetup gender age activity [height] [weight]
                     if (parts.Length != 4 && parts.Length != 6)
                     {
                         await bot.SendTextMessageAsync(message.Chat.Id, "Формат: /caloriesetup [стать: m/f] [вік] [рівень активності: 1.2/1.375/1.55/1.725/1.9] [зріст, см] [вага, кг] (останні два параметри необов'язкові, якщо вже задані)");

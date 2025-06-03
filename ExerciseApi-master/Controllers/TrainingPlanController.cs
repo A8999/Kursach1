@@ -87,26 +87,20 @@ namespace APIprot.Controllers
         [HttpPost("ai-recommend")]
         public async Task<IActionResult> AiRecommend([FromBody] AiRecommendDto dto, [FromServices] ExerciseApi.Services.GeminiService geminiService)
         {
-            // 1. Отримати вправи з плану
             var planExercises = _db.PlanExercises.Where(x => x.UserId == dto.TelegramId && x.PlanName == dto.PlanName).ToList();
             if (planExercises.Count == 0)
                 return BadRequest("План порожній або не знайдено");
-            // 2. Сформувати опис плану
             var planDescription = string.Join(", ", planExercises.Select(e => $"{e.ExerciseName} ({e.ExerciseId})"));
-            // 3. Викликати Gemini
             var aiResponse = await geminiService.GetRecommendation(planDescription);
             if (aiResponse != null && aiResponse.StartsWith("[AI Error]"))
             {
-                // Якщо сталася помилка AI, повертаємо її як message
                 return Ok(new { message = aiResponse });
             }
-            // 4. Парсити відповідь (очікуємо формат: Назва;Група;Опис)
             var parts = aiResponse?.Split(';');
             if (parts == null || parts.Length < 2)
                 return Ok(new { message = "AI не зміг запропонувати вправу.", aiResponse });
             var exerciseName = parts[0].Trim();
             var bodyPart = parts[1].Trim();
-            // 5. Додати вправу у план (id буде "AI" + 4 випадкові цифри)
             var random = new Random();
             var shortId = $"AI-{random.Next(1000, 10000)}";
             var newExercise = new PlanExercise
@@ -124,21 +118,16 @@ namespace APIprot.Controllers
         [HttpPost("delete")]
         public IActionResult DeletePlan([FromBody] PlanDto dto)
         {
-            // Знаходимо всі вправи у плані
             var items = _db.PlanExercises.Where(x => x.UserId == dto.TelegramId && x.PlanName == dto.PlanName).ToList();
-            // Перевіряємо, чи існує хоча б один запис з цим планом (навіть якщо немає вправ)
             bool planExists = _db.PlanExercises.Any(x => x.UserId == dto.TelegramId && x.PlanName == dto.PlanName) ||
                               _db.PlanExercises.Local.Any(x => x.UserId == dto.TelegramId && x.PlanName == dto.PlanName);
             if (!planExists)
                 return NotFound(new { deleted = false });
-            // Видаляємо всі вправи з плану (якщо є)
             if (items.Count > 0)
             {
                 _db.PlanExercises.RemoveRange(items);
                 _db.SaveChanges();
             }
-            // Додаємо "заглушку" для порожнього плану, якщо потрібно (або видаляємо, якщо є окрема таблиця для планів)
-            // Якщо план існує лише як "порожній" (без вправ), його теж вважаємо видаленим
             return Ok(new { deleted = true });
         }
     }
