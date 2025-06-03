@@ -40,9 +40,10 @@ namespace APIprot.Clients
                 case "/waist": bodyPart = "waist"; break;
                 case string text when text.StartsWith("/caloriesetup"):
                     var parts = text.Split(' ');
-                    if (parts.Length != 4)
+                    // Дозволяємо вводити зріст і вагу прямо у команді: /caloriesetup gender age activity [height] [weight]
+                    if (parts.Length != 4 && parts.Length != 6)
                     {
-                        await bot.SendTextMessageAsync(message.Chat.Id, "Формат: /caloriesetup [стать: m/f] [вік] [рівень активності: 1.2/1.375/1.55/1.725/1.9]");
+                        await bot.SendTextMessageAsync(message.Chat.Id, "Формат: /caloriesetup [стать: m/f] [вік] [рівень активності: 1.2/1.375/1.55/1.725/1.9] [зріст, см] [вага, кг] (останні два параметри необов'язкові, якщо вже задані)");
                         return;
                     }
                     string gender = parts[1].ToLower();
@@ -62,16 +63,29 @@ namespace APIprot.Clients
                         await bot.SendTextMessageAsync(message.Chat.Id, "Вказаний рівень активності не коректний. Оберіть доступний з переліку вище");
                         return;
                     }
-                    var userParams = await _client.GetUserParameters(message.Chat.Id);
-                    if (userParams == null)
+                    double height, weight;
+                    if (parts.Length == 6)
                     {
-                        await bot.SendTextMessageAsync(message.Chat.Id, "Спочатку задайте параметри через /set.");
-                        return;
+                        if (!double.TryParse(parts[4], out height) || !double.TryParse(parts[5], out weight))
+                        {
+                            await bot.SendTextMessageAsync(message.Chat.Id, "Неправильний формат. Зріст і вага мають бути числами.");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        var userParams = await _client.GetUserParameters(message.Chat.Id);
+                        if (userParams == null)
+                        {
+                            await bot.SendTextMessageAsync(message.Chat.Id, "Введіть зріст і вагу у команді: /caloriesetup [стать] [вік] [активність] [зріст] [вага]");
+                            return;
+                        }
+                        height = userParams.Value.height;
+                        weight = userParams.Value.weight;
                     }
                     double bmr = gender == "m" || gender == "male"
-                        ? 88.362 + (13.397 * userParams.Value.weight) + (4.799 * userParams.Value.height) - (5.677 * age)
-                        : 447.593 + (9.247 * userParams.Value.weight) + (3.098 * userParams.Value.height) - (4.330 * age);
-
+                        ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
+                        : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
                     double calories = bmr * activity;
                     await bot.SendTextMessageAsync(message.Chat.Id, $"Ваша добова норма калорій: {calories:F0} ккал");
                     return;
@@ -247,12 +261,6 @@ namespace APIprot.Clients
                         await bot.SendTextMessageAsync(message.Chat.Id, "Неправильний формат. Правильний: /sbdset [присідання] [жим лежачи] [станова тяга]");
                         return;
                     }
-                    var userParamsResp = await _client.GetUserParameters(message.Chat.Id);
-                    if (userParamsResp == null)
-                    {
-                        await bot.SendTextMessageAsync(message.Chat.Id, "Спочатку задайте свої параметри через /set [зріст] [вага].");
-                        return;
-                    }
                     await _client.SetSBD(message.Chat.Id, squat, bench, deadlift);
                     await bot.SendTextMessageAsync(message.Chat.Id, "Ваші SBD-результати збережено.");
                     return;
@@ -292,6 +300,10 @@ namespace APIprot.Clients
                     else
                         botMessage = "Такого плану не створено.";
                     break;
+                case "/deleteparameters":
+                    await _client.DeleteUserParameters(message.Chat.Id);
+                    await bot.SendTextMessageAsync(message.Chat.Id, "Ваші параметри були видалені.");
+                    return;
                 default:
                     await bot.SendTextMessageAsync(message.Chat.Id, "Такої команди не існує. Оберіть бажану функцію з переліку:\n" + VshghCoachBot.BotMessages.CommandsResponse.help);
                     return;

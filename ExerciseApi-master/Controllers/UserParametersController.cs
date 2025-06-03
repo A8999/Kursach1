@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExerciseApi.Models;
 using ExerciseApi.Data;
+using ExerciseApi.Body;
 
 namespace APIprot.Controllers
 {
@@ -53,12 +54,6 @@ namespace APIprot.Controllers
                 _db.SaveChanges();
             }
             return Ok();
-        }
-
-        public class UserParamsDto
-        {
-            public double Height { get; set; }
-            public double Weight { get; set; }
         }
     }
 }

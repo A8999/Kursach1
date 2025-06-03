@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExerciseApi.Models;
 using ExerciseApi.Data;
+using ExerciseApi.Body;
 
 namespace APIprot.Controllers
 {
@@ -52,13 +53,6 @@ namespace APIprot.Controllers
                 .Select(x => new FavoriteDto { ExerciseId = x.ExerciseId, ExerciseName = x.ExerciseName })
                 .ToList();
             return list;
-        }
-
-        public class FavoriteDto
-        {
-            public long TelegramId { get; set; }
-            public string ExerciseId { get; set; }
-            public string ExerciseName { get; set; }
         }
     }
 }

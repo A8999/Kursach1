@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ExerciseApi.Models;
 using ExerciseApi.Data;
 using System.Linq;
+using ExerciseApi.Body;
 
 namespace ExerciseApi.Controllers
 {
@@ -66,13 +67,5 @@ namespace ExerciseApi.Controllers
             }
             return Ok();
         }
-    }
-
-    public class SBDRequestDto
-    {
-        public long userId { get; set; }
-        public double squat { get; set; }
-        public double bench { get; set; }
-        public double deadlift { get; set; }
     }
 }

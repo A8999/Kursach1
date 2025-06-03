@@ -9,17 +9,11 @@ namespace APIprot.Clients
     public class TelegramClient
     {
         private readonly Client _exerciseClient;
-        private readonly CommandHandler _commandHandler;
-        private readonly UserParameterHandler _userParameterHandler;
-        private readonly SBDHandler _sbdHandler;
         private readonly ExerciseHandler _exerciseHandler;
 
         public TelegramClient(Client client, HttpClient httpClient)
         {
             _exerciseClient = client;
-            _commandHandler = new CommandHandler();
-            _userParameterHandler = new UserParameterHandler(client);
-            _sbdHandler = new SBDHandler(httpClient);
             _exerciseHandler = new ExerciseHandler(client);
         }
 
