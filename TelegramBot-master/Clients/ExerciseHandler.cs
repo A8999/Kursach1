@@ -62,10 +62,10 @@ namespace APIprot.Clients
                         await bot.SendTextMessageAsync(message.Chat.Id, "Вказаний рівень активності не коректний. Оберіть доступний з переліку вище");
                         return;
                     }
-                    double height = 0, weight = 0;
+                    double caloriesHeight, caloriesWeight;
                     if (parts.Length == 6)
                     {
-                        if (!double.TryParse(parts[4], out height) || !double.TryParse(parts[5], out weight))
+                        if (!double.TryParse(parts[4], out caloriesHeight) || !double.TryParse(parts[5], out caloriesWeight))
                         {
                             await bot.SendTextMessageAsync(message.Chat.Id, "Неправильний формат. Зріст і вага мають бути числами.");
                             return;
@@ -79,12 +79,12 @@ namespace APIprot.Clients
                             await bot.SendTextMessageAsync(message.Chat.Id, "Введіть зріст і вагу у команді: /caloriesetup [стать] [вік] [активність] [зріст] [вага]");
                             return;
                         }
-                        height = userParams.Value.height;
-                        weight = userParams.Value.weight;
+                        caloriesHeight = userParams.Value.height;
+                        caloriesWeight = userParams.Value.weight;
                     }
                     double bmr = gender == "m" || gender == "male"
-                        ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
-                        : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+                        ? 88.362 + (13.397 * caloriesWeight) + (4.799 * caloriesHeight) - (5.677 * age)
+                        : 447.593 + (9.247 * caloriesWeight) + (3.098 * caloriesHeight) - (4.330 * age);
                     double calories = bmr * activity;
                     await bot.SendTextMessageAsync(message.Chat.Id, $"Ваша добова норма калорій: {calories:F0} ккал");
                     return;
@@ -225,12 +225,13 @@ namespace APIprot.Clients
                     return;
                 case string text when text.StartsWith("/set"):
                     var setParts = text.Split(' ');
-                    if (setParts.Length != 3 || !double.TryParse(setParts[1], out double height) || !double.TryParse(setParts[2], out double weight))
+                    double setHeight, setWeight;
+                    if (setParts.Length != 3 || !double.TryParse(setParts[1], out setHeight) || !double.TryParse(setParts[2], out setWeight))
                     {
                         await bot.SendTextMessageAsync(message.Chat.Id, "Неправильний формат. Правильний: /set [зріст] [вага]");
                         return;
                     }
-                    await _client.SetUserParameters(message.Chat.Id, height, weight);
+                    await _client.SetUserParameters(message.Chat.Id, setHeight, setWeight);
                     await bot.SendTextMessageAsync(message.Chat.Id, "Ваші параметри збережено.");
                     return;
                 case string text when text.StartsWith("/bmi"):
