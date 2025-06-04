@@ -62,7 +62,7 @@ namespace APIprot.Clients
                         await bot.SendTextMessageAsync(message.Chat.Id, "Вказаний рівень активності не коректний. Оберіть доступний з переліку вище");
                         return;
                     }
-                    double height, weight;
+                    double height = 0, weight = 0;
                     if (parts.Length == 6)
                     {
                         if (!double.TryParse(parts[4], out height) || !double.TryParse(parts[5], out weight))
@@ -74,7 +74,7 @@ namespace APIprot.Clients
                     else
                     {
                         var userParams = await _client.GetUserParameters(message.Chat.Id);
-                        if (userParams == null)
+                        if (userParams == null || userParams.Value.height == 0 || userParams.Value.weight == 0)
                         {
                             await bot.SendTextMessageAsync(message.Chat.Id, "Введіть зріст і вагу у команді: /caloriesetup [стать] [вік] [активність] [зріст] [вага]");
                             return;
